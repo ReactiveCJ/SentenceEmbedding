@@ -1,3 +1,6 @@
+import numpy as np 
+import torch
+
 def global_metric(word_vecs):
     cov = np.cov(word_vecs.T)
     average = np.mean(word_vecs, axis=0)
@@ -24,7 +27,6 @@ def metric_emb(word_vecs, sens, inverse_cov, global_avg, global_only):
             emb[idx] = weights.dot(raw_emb)
         else:
             emb[idx] = np.zeros(word_vecs.shape[1])
-
     return torch.from_numpy(emb)
 
 def average_emb(word_vecs, sens):
