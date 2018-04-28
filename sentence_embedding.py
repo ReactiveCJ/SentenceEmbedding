@@ -1,7 +1,9 @@
-def average_emb(word_vecs, sens):
+import numpy as np
+
+def average_embedding(word_vecs, sens):
     """
-    Compute the sentence weighted average vectors
-    :param word_vecs: wv[i,:] - vector of word i - V*D
+    Compute the sentence weighted average embedding vectors
+    :param word_vecs: word_vecs[i,:] - vector of word i - V * D
     :param sens: sens[i] - word indices list of sentence i - N * Unknown
     :return: emb[i, :] - embedding of sentence i - N * V
     """
@@ -15,10 +17,10 @@ def average_emb(word_vecs, sens):
     return emb
 
 
-def weighted_emb(word_vecs, sens, weights):
+def weighted_embedding(word_vecs, sens, weights):
     """
-    Compute the sentence weighted average vectors
-    :param word_vecs: wv[i,:] - vector of word i - V*D
+    Compute the sentence weighted average embedding vectors
+    :param word_vecs: word_vecs[i,:] - vector of word i - V * D
     :param sens: sens[i] - word indices list of sentence i - N * Unknown
     :param weights: weights[i] - weight of word i - V * 1
     :return: emb[i, :] - embedding of sentence i - N * V
@@ -35,27 +37,27 @@ def weighted_emb(word_vecs, sens, weights):
 
 def first_pca(sen_vecs):
     """
-    :param sen_vecs: sentence embeddings, no need normalization 
+    :param sen_vecs: sentence embedding vectors, no need for normalization
     :return: first component computed from pca
     """
     U, S, V = np.linalg.svd(sen_vecs)
     return V[:, 0:1]
 
 
-def sif_emb(sen_vecs, first_component):
+def sif_embedding(sen_vecs, first_component):
     """
     first component
-    :param sen_vecs: sentence embeddings  - N * V
-    :param first_component: compute by pca - Ｖ * 1
-    :return: new sentence embeddings - N * V
+    :param sen_vecs: sentence embedding vectors -  N * V
+    :param first_component: compute by pca - V * 1
+    :return: new sentence embedding vecs - N * V
     """
     emb = sen_vecs - (sen_vecs.dot(first_component)).dot(first_component.T)
     return emb
 
 
-def global_metric(word_vec):
-    cov = np.cov(word_vec.T)
-    average = np.mean(word_vec, axis=0)
+def global_metric(word_vecs):
+    cov = np.cov(word_vecs.T)
+    average = np.mean(word_vecs, axis=0)
     return np.linalg.inv(cov), average
 
 
@@ -79,10 +81,9 @@ def metric_embedding(word_vecs, sens, inverse_cov, global_avg, global_only):
             emb[idx] = weights.dot(raw_emb)
         else:
             emb[idx] = np.zeros(word_vecs.shape[1])
-
     return emb
 
 
 wvs = np.random.randn(20, 5)
-sens = [0, 4, 6, 11]
-sens_vec = average_emb(wvs, sens)
+sentence_list = [[0, 4, 6, 11]]
+sens_vec = average_embedding(wvs, sentence_list)
