@@ -1,5 +1,5 @@
 # SentenceEmbedding
-Code for 
+Code based on
 
 Context is Everything: Finding Meaning Statistically in Semantic Spaces.
 
