@@ -83,6 +83,57 @@ def metric_embedding(word_vecs, sens, inverse_cov, global_avg, global_only):
             emb[idx] = np.zeros(word_vecs.shape[1])
     return emb
 
+def is_zero(x):
+    if x == 0:
+        return 0
+    else:
+        return 1/x
+
+
+def cosine_similar_matrix(data_matrix):
+    s_matrix = np.dot(data_matrix, data_matrix.T)
+    square_mag = np.diag(s_matrix)
+    inv_square_mag = np.array(list(map(lambda x: is_zero(x), square_mag.data)))
+    inv_mag = np.sqrt(inv_square_mag)
+    cosine_matrix = s_matrix * inv_mag
+    return cosine_matrix.T * inv_mag
+
+
+def metric_similar_matrix(data_matrix, inverse_cov, global_avg):
+    s_matrix = np.zeros((data_matrix.shape[0], data_matrix.shape[0]), dtype=np.float32)
+    distance_matrix = np.array([metric_distance(inverse_cov, vec, global_avg) for vec in data_matrix])
+    row_num = s_matrix.shape[0]
+    for i in range(row_num):
+        vec_a = data_matrix[i]
+        dis_a = distance_matrix[i]
+        for j in range(row_num):
+            vec_b = data_matrix[j]
+            dis_b = distance_matrix[j]
+            dis_c = metric_distance(inverse_cov, vec_a, vec_b)
+            s_matrix[i][j] = (dis_a*dis_a + dis_b*dis_b - dis_c*dis_c)/(2 * dis_a * dis_b)
+    return s_matrix
+
+
+def diag_default(matrix):
+    row, _ = matrix.shape
+    for i in range(row):
+        matrix[i][i] = -100
+    return matrix
+
+
+def top_similarity(sentence_embeddings, topk):
+    sens_similarity = cosine_similar_matrix(sentence_embeddings)
+    sens_similarity = diag_default(sens_similarity)
+    top_sim, top_sens = torch.topk(torch.from_numpy(sens_similarity), topk, 1)
+    return top_sim, top_sens
+
+
+def top_metric_similarity(sentence_embeddings, inverse_cov, global_avg, topk):
+    sens_similarity = metric_similar_matrix(sentence_embeddings, inverse_cov, global_avg)
+    sens_similarity = diag_default(sens_similarity)
+    top_sim, top_sens = torch.topk(torch.from_numpy(sens_similarity), topk, 1)
+    return top_sim, top_sens
+
 
 wvs = np.random.randn(20, 5)
 sentence_list = [[0, 4, 6, 11]]
